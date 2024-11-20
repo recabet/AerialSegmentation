@@ -1,8 +1,18 @@
 import keras
 import numpy as np
 
-def unet_model(input_shape):
+def unet_model(input_shape)->keras.models.Model:
+    """
+    Builds and compiles a U-Net model for binary image segmentation.
+
+    Args:
+        input_shape (tuple): Shape of the input images (height, width, channels).
+
+    Returns:
+        keras.models.Model: A compiled U-Net model.
+    """
     inputs = keras.layers.Input(shape=input_shape)
+
 
     c1 = keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
     c1 = keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same')(c1)
@@ -48,20 +58,23 @@ def unet_model(input_shape):
     _model = keras.models.Model(inputs, outputs)
     _model.compile(optimizer='adam',
                    loss='binary_crossentropy',
-                   metrics=
-                   ['accuracy',
-                    keras.metrics.BinaryIoU(),
-                    keras.metrics.Precision(),
-                    keras.metrics.Recall()])
-
+                   metrics=['accuracy',
+                            keras.metrics.BinaryIoU(),
+                            keras.metrics.Precision(),
+                            keras.metrics.Recall()])
     return _model
 
 
-def filter_pixels(threshold:float,predictions:np.array):
-    for i, pred in enumerate(predictions):
-        for j, row in enumerate(pred):
-            for k, col in enumerate(row):
-                if predictions[i][j][k] > threshold:
-                    predictions[i][j][k] = 1
-                else:
-                    predictions[i][j][k] = 0
+def filter_pixels(threshold: float, predictions: np.array) -> np.array:
+    """
+    Applies a threshold to predictions to convert them into binary masks.
+
+    Args:
+        threshold (float): Threshold value between 0 and 1.
+        predictions (np.array): Predicted values with shape (N, H, W).
+
+    Returns:
+        np.array: Binary masks with values 0 or 1.
+    """
+    binary_predictions = (predictions > threshold).astype(np.uint8)
+    return binary_predictions
